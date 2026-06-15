@@ -10,7 +10,8 @@ const GOALS = {
   rest:      { cal: 1950, protein: 190, carbs: 135, fat: 65 }
 };
 
-const TODAY = new Date().toISOString().slice(0, 10);
+// Use NZ time so the "today" key matches what Claude writes from chat
+const TODAY = new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" });
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmtDate = iso => { const d = new Date(iso + "T12:00:00"); return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`; };

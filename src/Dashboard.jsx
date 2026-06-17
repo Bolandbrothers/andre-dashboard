@@ -207,6 +207,8 @@ export default function Dashboard() {
   const today = store[TODAY] || TODAY_SEED;
   const g = GOALS[today.type || "training"];
   const totals = (today.foods || []).reduce((a, f) => ({ cal: a.cal + (f.cal||0), protein: a.protein + (f.protein||0), carbs: a.carbs + (f.carbs||0), fat: a.fat + (f.fat||0) }), { cal: 0, protein: 0, carbs: 0, fat: 0 });
+  const burnedToday = (today.activity || []).reduce((a, x) => a + (x.cal || 0), 0);
+  const netToday = Math.round(totals.cal - burnedToday);
 
   function setDayType(type) {
     const next = { ...store, [TODAY]: { ...today, type } };
@@ -338,6 +340,36 @@ export default function Dashboard() {
                 <MacroRing label="Fat"      actual={totals.fat} goal={g.fat} color={G} />
               </div>
 
+              {/* Energy balance */}
+              <div style={s.card}>
+                <div style={s.cardTitle}>Energy Balance</div>
+                <div style={s.cardSub}>Calories in vs out · activity pulled from Strava</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                  <div style={{ background: BG, borderRadius: 8, padding: 12, textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: Y, lineHeight: 1 }}>{Math.round(totals.cal)}</div>
+                    <div style={{ fontSize: 10, color: MU, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 3 }}>Eaten</div>
+                  </div>
+                  <div style={{ background: BG, borderRadius: 8, padding: 12, textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: O, lineHeight: 1 }}>{burnedToday}</div>
+                    <div style={{ fontSize: 10, color: MU, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 3 }}>Burned</div>
+                  </div>
+                  <div style={{ background: BG, borderRadius: 8, padding: 12, textAlign: "center" }}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: G, lineHeight: 1 }}>{netToday}</div>
+                    <div style={{ fontSize: 10, color: MU, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 3 }}>Net</div>
+                  </div>
+                </div>
+                {(today.activity || []).length > 0 && (
+                  <div style={{ marginTop: 10 }}>
+                    {(today.activity || []).map((a, i) => (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: i < today.activity.length - 1 ? `1px solid rgba(42,47,66,.4)` : "none", fontSize: 12 }}>
+                        <span style={{ color: "#f0f2f8" }}>{a.name}</span>
+                        <span style={{ color: O }}>{a.cal} cal</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Food log */}
               <div style={s.card}>
                 <div style={s.cardTitle}>Food Log</div>
@@ -393,6 +425,8 @@ export default function Dashboard() {
                 const dg = GOALS[d.type||"training"];
                 const calOk = Math.abs(t.cal - dg.cal) < 150;
                 const calOver = t.cal > dg.cal + 150;
+                const dBurned = (d.activity||[]).reduce((a,x)=>a+(x.cal||0),0);
+                const dNet = Math.round(t.cal - dBurned);
                 return (
                   <div key={k} style={{ ...s.card, marginBottom: 8 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -407,6 +441,12 @@ export default function Dashboard() {
                         </div>
                       ))}
                     </div>
+                    {dBurned > 0 && (
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, paddingTop: 8, borderTop: `1px solid rgba(42,47,66,.4)`, fontSize: 11 }}>
+                        <span style={{ color: MU }}>🔥 Burned <span style={{ color: O, fontWeight: 600 }}>{dBurned}</span></span>
+                        <span style={{ color: MU }}>Net <span style={{ color: G, fontWeight: 600 }}>{dNet}</span></span>
+                      </div>
+                    )}
                   </div>
                 );
               })}

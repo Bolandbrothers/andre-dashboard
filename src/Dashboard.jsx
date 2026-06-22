@@ -86,6 +86,28 @@ const GYM_BLOCKS = {
       { name: "SL Leg Press",     meta: "Machine kg · depth focus",           weeks: [80,null,120,null],color: G },
       { name: "Hamstring Curl",   meta: "kg",                                 weeks: [30,null,40,null],color: Y },
     ]
+  },
+  4: {
+    upper: [
+      { name: "Bench Press",      meta: "Barbell 5×5 target · Wk1 top single 100×1", weeks: [100,null,null,null], color: Y },
+      { name: "Incline DB Press", meta: "DB/hand kg (Wk1 fly 20)",           weeks: [20,null,null,null],  color: B },
+      { name: "Shoulder Press",   meta: "DB per hand kg (prev 30)",          weeks: [27.5,null,null,null],color: O },
+      { name: "Lateral Raise",    meta: "DB/hand + dropset",                 weeks: [12.5,null,null,null],color: G },
+      { name: "Cable Row",        meta: "DB kg (prev 66+10)",                weeks: [40,null,null,null],  color: Y },
+      { name: "Assisted Pull-up", meta: "Counterweight kg (↓ = stronger)",    weeks: [15,null,null,null],  color: B },
+      { name: "Barbell Curl",     meta: "EZ-bar kg (prev 40)",               weeks: [37.5,null,null,null],color: O },
+      { name: "Tricep Pushdown",  meta: "Single-arm cable kg",               weeks: [50,null,null,null],  color: G },
+      { name: "Hammer Curl",      meta: "DB per hand kg",                    weeks: [10,null,null,null],  color: Y },
+      { name: "Skullcrusher",     meta: "kg",                                weeks: [12.5,null,null,null],color: B },
+    ],
+    lower: [
+      { name: "Squat",            meta: "Barbell 5×5 · planned opener",      weeks: [100,null,null,null], color: Y },
+      { name: "RDL",              meta: "Barbell 5×5 · planned opener",      weeks: [100,null,null,null], color: B },
+      { name: "Good Morning",     meta: "Barbell kg · planned",              weeks: [40,null,null,null],  color: O },
+      { name: "Calf Press",       meta: "Machine kg · NEW (3×15-20)",        weeks: [160,null,null,null], color: G },
+      { name: "SL Leg Press",     meta: "Machine kg · planned",              weeks: [120,null,null,null], color: Y },
+      { name: "Hamstring Curl",   meta: "Single-leg kg · planned",           weeks: [40,null,null,null],  color: B },
+    ]
   }
 };
 
@@ -166,7 +188,7 @@ export default function Dashboard() {
   const [section, setSection] = useState("nutrition");
   const [nutritionTab, setNutritionTab] = useState("today");
   const [gymTab, setGymTab] = useState("overview");
-  const [block, setBlock] = useState(1);
+  const [block, setBlock] = useState(4);
   const [store, setStore] = useState({});
   const [loaded, setLoaded] = useState(false);
   const [foodForm, setFoodForm] = useState({ name: "", cal: "", protein: "", carbs: "", fat: "" });
@@ -310,7 +332,7 @@ export default function Dashboard() {
         <div style={s.h1}>Andre Boland</div>
         <div style={s.headerSub}>
           <div style={s.saveDot} />
-          <span>{saving ? "Saving..." : "Synced"} · Cut 100kg→85kg · Block 3 Complete</span>
+          <span>{saving ? "Saving..." : "Synced"} · Cut 100kg→85kg · Block 4 In Progress</span>
         </div>
       </header>
 
@@ -520,7 +542,7 @@ export default function Dashboard() {
           {gymTab === "blocks" && (
             <>
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-                {[1,2,3].map(b => <button key={b} style={s.blockBtn(block===b)} onClick={() => setBlock(b)}>Block {b}</button>)}
+                {[1,2,3,4].map(b => <button key={b} style={s.blockBtn(block===b)} onClick={() => setBlock(b)}>Block {b}</button>)}
               </div>
               <div style={s.exGrid}>
                 {allExercises.map((ex, i) => <ExerciseCard key={i} ex={ex} />)}
@@ -582,10 +604,11 @@ export default function Dashboard() {
               {[
                 {cls:"b1",col:O,title:"Block 1 — Heavy Foundation (Nov 2024)",body:"Squat 100→135kg (140×9 noted). RDL 70→100kg. Hip Thrust 60→100kg. Leg Press to 260kg. Bench 72.5→90kg. Barbell shoulder press to 50kg. Heavy compound loading — raw strength base."},
                 {cls:"b2",col:B,title:"Block 2 — Reset & Upper Peak (Early 2025)",body:"Squat reset to 80–100kg for depth. RDL peaks at 140kg×3. Bench hits 95kg. Shoulder Press switches to DBs (20→30kg/hand). Cable Row 48→66kg. Technique focus alongside upper body volume."},
-                {cls:"b3",col:Y,title:"Block 3 — Variation & Consolidation (2025 — Complete)",body:"Bench varies: DB 35kg/hand Wk1, barbell 95kg Wk3–4. Incline peaks 35kg/hand. Lateral Raise to 10kg. Squat holds 100kg 5×5 depth. Assisted PU assistance halved (35→20kg). Block complete — Block 4 incoming."},
+                {cls:"b3",col:O,title:"Block 3 — Variation & Consolidation (Complete)",body:"Bench varies: DB 35kg/hand Wk1, barbell 95kg Wk3–4. Incline peaks 35kg/hand. Lateral Raise to 10kg. Squat holds 100kg 5×5 depth. Assisted PU assistance halved (35→20kg)."},
+                {cls:"b4",col:Y,title:"Block 4 — Strength Focus (In Progress)",body:"Shift to heavy 5×5 on Bench and Squat. Bench opens at 100kg (5×5) off a 95×1 previous. New accessories: Calf Press, Hammer Curls, Skullcrushers for direct arm and calf volume. Conditioning finishers carry over. PT-programmed, just begun."},
               ].map((b,i) => (
                 <div key={i} style={{ display: "flex", gap: 14, marginBottom: 20, position: "relative" }}>
-                  {i < 2 && <div style={{ position: "absolute", left: 13, top: 28, bottom: -8, width: 1, background: BR }} />}
+                  {i < 3 && <div style={{ position: "absolute", left: 13, top: 28, bottom: -8, width: 1, background: BR }} />}
                   <div style={{ width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, background: `${b.col}22`, border: `1px solid ${b.col}`, zIndex: 1 }}>{i+1}</div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{b.title}</div>

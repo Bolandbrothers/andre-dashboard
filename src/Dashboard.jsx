@@ -292,6 +292,7 @@ export default function Dashboard() {
   const gymNorms = (store.gym && store.gym.norms) || NORMS;
   const gymPeaks = (store.gym && store.gym.peaks) || null;
   const gymPbs = (store.gym && store.gym.pbs) || [];
+  const gymJourney = (store.gym && store.gym.journey) || null;
   const gymRadar = gymNorms.map(n => ({ subject: n.lift, score: Math.min(130, Math.round((n.best / n.thresholds[1]) * 100)), fullMark: 130 }));
 
   const weightChartData = [...weights].reverse().map(x => ({ date: fmtDate(x.date), weight: x.w }));
@@ -632,17 +633,17 @@ export default function Dashboard() {
           {gymTab === "journey" && (
             <div style={s.card}>
               <div style={s.cardTitle}>Block by Block</div>
-              {[
-                {cls:"b1",col:O,title:"Block 1 — Heavy Foundation (Nov 2024)",body:"Squat 100→135kg (140×9 noted). RDL 70→100kg. Hip Thrust 60→100kg. Leg Press to 260kg. Bench 72.5→90kg. Barbell shoulder press to 50kg. Heavy compound loading — raw strength base."},
-                {cls:"b2",col:B,title:"Block 2 — Reset & Upper Peak (Early 2025)",body:"Squat reset to 80–100kg for depth. RDL peaks at 140kg×3. Bench hits 95kg. Shoulder Press switches to DBs (20→30kg/hand). Cable Row 48→66kg. Technique focus alongside upper body volume."},
-                {cls:"b3",col:O,title:"Block 3 — Variation & Consolidation (Complete)",body:"Bench varies: DB 35kg/hand Wk1, barbell 95kg Wk3–4. Incline peaks 35kg/hand. Lateral Raise to 10kg. Squat holds 100kg 5×5 depth. Assisted PU assistance halved (35→20kg)."},
-                {cls:"b4",col:Y,title:"Block 4 — Strength Focus (In Progress)",body:"Shift to heavy 5×5 on Bench and Squat. Bench opens at 100kg (5×5) off a 95×1 previous. New accessories: Calf Press, Hammer Curls, Skullcrushers for direct arm and calf volume. Conditioning finishers carry over. PT-programmed, just begun."},
-              ].map((b,i) => (
+              {(gymJourney || [
+                {col:"O",title:"Block 1 — Heavy Foundation",body:"Squat 100→135kg (140×9 noted). RDL 70→100kg. Hip Thrust 60→100kg. Leg Press to 320kg. Bench 72.5→90kg. Barbell shoulder press to 50kg. Heavy compound loading, raw strength base."},
+                {col:"B",title:"Block 2 — Reset & Upper Peak",body:"Squat reset to 80–100kg for depth. RDL peaks at 140kg×3. Bench hits 95kg. Shoulder Press switches to DBs (20→30kg/hand). Cable Row 48→66kg. Technique focus alongside upper body volume."},
+                {col:"O",title:"Block 3 — Variation & Consolidation",body:"Bench varies: DB 35kg/hand Wk1, barbell 95kg Wk3–4. Incline peaks 35kg/hand. Lateral Raise to 10kg. Squat holds 100kg 5×5 depth. Assisted PU assistance halved (35→20kg)."},
+                {col:"Y",title:"Block 4 — Strength Focus",body:"Shift to heavy 5×5 on Bench and Squat. Bench opens at 100kg off a 95×1 previous. New accessories: Calf Press, Hammer Curls, Skullcrushers for direct arm and calf volume. PT-programmed, just begun."},
+              ]).map((b,i,arr) => (
                 <div key={i} style={{ display: "flex", gap: 14, marginBottom: 20, position: "relative" }}>
-                  {i < 3 && <div style={{ position: "absolute", left: 13, top: 28, bottom: -8, width: 1, background: BR }} />}
-                  <div style={{ width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, background: `${b.col}22`, border: `1px solid ${b.col}`, zIndex: 1 }}>{i+1}</div>
+                  {i < arr.length - 1 && <div style={{ position: "absolute", left: 13, top: 28, bottom: -8, width: 1, background: BR }} />}
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, background: `${rc(b.col)}22`, border: `1px solid ${rc(b.col)}`, zIndex: 1 }}>{i+1}</div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{b.title}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{b.title}{b.date && <span style={{ color: MU, fontWeight: 400 }}> · {b.date}</span>}</div>
                     <div style={{ fontSize: 12, color: MU, lineHeight: 1.55 }}>{b.body}</div>
                   </div>
                 </div>

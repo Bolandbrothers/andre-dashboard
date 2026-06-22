@@ -291,6 +291,7 @@ export default function Dashboard() {
   const gymBlocks = (store.gym && store.gym.blocks) || GYM_BLOCKS;
   const gymNorms = (store.gym && store.gym.norms) || NORMS;
   const gymPeaks = (store.gym && store.gym.peaks) || null;
+  const gymPbs = (store.gym && store.gym.pbs) || [];
   const gymRadar = gymNorms.map(n => ({ subject: n.lift, score: Math.min(130, Math.round((n.best / n.thresholds[1]) * 100)), fullMark: 130 }));
 
   const weightChartData = [...weights].reverse().map(x => ({ date: fmtDate(x.date), weight: x.w }));
@@ -599,6 +600,19 @@ export default function Dashboard() {
                     </div>
                   );
                 })}
+              </div>
+              <div style={s.card}>
+                <div style={s.cardTitle}>Personal Bests</div>
+                <div style={s.cardSub}>Accessory & machine lifts · no population standard, just your numbers</div>
+                {(gymPbs || []).map((p, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: i < (gymPbs.length - 1) ? `1px solid rgba(42,47,66,.4)` : "none" }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600 }}>{p.lift}</div>
+                      {p.note && <div style={{ fontSize: 10, color: MU, fontStyle: "italic" }}>{p.note}</div>}
+                    </div>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: rc(p.color), lineHeight: 1 }}>{p.best}{p.unit || "kg"}</div>
+                  </div>
+                ))}
               </div>
               <div style={s.card}>
                 <div style={s.cardTitle}>Strength Radar</div>

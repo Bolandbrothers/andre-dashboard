@@ -4,6 +4,8 @@ import { loadState, saveState } from "./supabase.js";
 
 // ── CONSTANTS ────────────────────────────────────────────────────────────────
 const Y = "#e8ff47", B = "#47c8ff", O = "#ff6b47", G = "#4ade80", MU = "#6b7494", BR = "#2a2f42", CARD = "#1c2030", BG = "#0d0f14", SURF = "#151820";
+const COLOR_MAP = { Y, B, O, G };
+const rc = c => COLOR_MAP[c] || c || Y;  // resolve color: letter key -> hex, or passthrough hex
 
 const GOALS = {
   training: { cal: 2250, protein: 190, carbs: 200, fat: 65 },
@@ -112,7 +114,7 @@ const GYM_BLOCKS = {
 };
 
 const NORMS = [
-  { lift: "Bench (Barbell)", best: 95,  bw: "0.95×", thresholds: [70,100,130], color: Y, note: "B2/B3 peak" },
+  { lift: "Bench (Barbell)", best: 100, bw: "1.00×", thresholds: [70,100,130], color: Y, note: "B4 Wk1 single" },
   { lift: "Squat",           best: 135, bw: "1.35×", thresholds: [90,125,162], color: B, note: "B1 peak" },
   { lift: "RDL",             best: 140, bw: "1.40×", thresholds: [100,140,185],color: O, note: "B2 Wk4" },
   { lift: "Hip Thrust",      best: 100, bw: "1.00×", thresholds: [80,120,160], color: G, note: "B1 Wk4" },
@@ -173,7 +175,7 @@ function ExerciseCard({ ex }) {
           return (
             <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, height: "100%", justifyContent: "flex-end" }}>
               <div style={{ fontSize: 9, fontWeight: 600, color: "#f0f2f8" }}>{v !== null ? v : "—"}</div>
-              <div style={{ width: "100%", height: `${pct}%`, borderRadius: "3px 3px 0 0", background: v !== null ? ex.color : BR, opacity: v !== null ? 1 : 0.25 }} />
+              <div style={{ width: "100%", height: `${pct}%`, borderRadius: "3px 3px 0 0", background: v !== null ? rc(ex.color) : BR, opacity: v !== null ? 1 : 0.25 }} />
               <div style={{ fontSize: 9, color: MU }}>W{i + 1}</div>
             </div>
           );
@@ -285,6 +287,12 @@ export default function Dashboard() {
   ];
   const radarData = NORMS.map(n => ({ subject: n.lift, score: Math.min(130, Math.round((n.best / n.thresholds[1]) * 100)), fullMark: 130 }));
 
+  // Gym data: prefer Supabase (live, updates after each session), fall back to hardcoded.
+  const gymBlocks = (store.gym && store.gym.blocks) || GYM_BLOCKS;
+  const gymNorms = (store.gym && store.gym.norms) || NORMS;
+  const gymPeaks = (store.gym && store.gym.peaks) || null;
+  const gymRadar = gymNorms.map(n => ({ subject: n.lift, score: Math.min(130, Math.round((n.best / n.thresholds[1]) * 100)), fullMark: 130 }));
+
   const weightChartData = [...weights].reverse().map(x => ({ date: fmtDate(x.date), weight: x.w }));
 
   if (!loaded) return (
@@ -323,7 +331,7 @@ export default function Dashboard() {
     exGrid: { display: "grid", gridTemplateColumns: "1fr", gap: 10 },
   };
 
-  const allExercises = [...(GYM_BLOCKS[block]?.upper || []), ...(GYM_BLOCKS[block]?.lower || [])];
+  const allExercises = [...(gymBlocks[block]?.upper || []), ...(gymBlocks[block]?.lower || [])];
 
   return (
     <div style={s.app}>
@@ -487,10 +495,19 @@ export default function Dashboard() {
           {gymTab === "overview" && (
             <>
               <div style={s.kpiGrid}>
-                <div style={s.kpi(Y)}><div style={s.kpiLabel}>Bench Peak</div><div style={s.kpiVal(Y)}>95<span style={{fontSize:13}}>kg</span></div><div style={s.kpiSub}>Barbell · B2/B3</div><span style={s.badge(G,"rgba(74,222,128,.15)")}>Started 72.5kg</span></div>
-                <div style={s.kpi(B)}><div style={s.kpiLabel}>Squat Peak</div><div style={s.kpiVal(B)}>135<span style={{fontSize:13}}>kg</span></div><div style={s.kpiSub}>B1 · Reset B2/3 depth</div><span style={s.badge(B,"rgba(71,200,255,.15)")}>140×9 noted</span></div>
-                <div style={s.kpi(O)}><div style={s.kpiLabel}>RDL Peak</div><div style={s.kpiVal(O)}>140<span style={{fontSize:13}}>kg</span></div><div style={s.kpiSub}>B2 Wk4 · 3 reps</div><span style={s.badge(G,"rgba(74,222,128,.15)")}>Started 70kg +100%</span></div>
-                <div style={s.kpi(G)}><div style={s.kpiLabel}>Hip Thrust</div><div style={s.kpiVal(G)}>100<span style={{fontSize:13}}>kg</span></div><div style={s.kpiSub}>B1 Wk4 · Leg Press 260kg</div><span style={s.badge(G,"rgba(74,222,128,.15)")}>Started 60kg</span></div>
+                {(gymPeaks || [
+                  {label:"Bench Peak",val:100,unit:"kg",color:"Y",sub:"Barbell · B4 Wk1 single",badge:"Started 72.5kg",badgeColor:"G"},
+                  {label:"Squat Peak",val:135,unit:"kg",color:"B",sub:"B1 · Reset B2/3 depth",badge:"140×9 noted",badgeColor:"B"},
+                  {label:"RDL Peak",val:140,unit:"kg",color:"O",sub:"B2 Wk4 · 3 reps",badge:"Started 70kg +100%",badgeColor:"G"},
+                  {label:"Hip Thrust",val:100,unit:"kg",color:"G",sub:"B1 Wk4 · Leg Press 260kg",badge:"Started 60kg",badgeColor:"G"},
+                ]).map((k, i) => (
+                  <div key={i} style={s.kpi(rc(k.color))}>
+                    <div style={s.kpiLabel}>{k.label}</div>
+                    <div style={s.kpiVal(rc(k.color))}>{k.val}<span style={{fontSize:13}}>{k.unit||"kg"}</span></div>
+                    <div style={s.kpiSub}>{k.sub}</div>
+                    {k.badge && <span style={s.badge(rc(k.badgeColor), `${rc(k.badgeColor)}26`)}>{k.badge}</span>}
+                  </div>
+                ))}
               </div>
               <div style={s.card}>
                 <div style={s.cardTitle}>Peak Load Per Block</div>
@@ -558,7 +575,7 @@ export default function Dashboard() {
               <div style={s.card}>
                 <div style={s.cardTitle}>vs Population Norms</div>
                 <div style={s.cardSub}>Male · 35yrs · 100kg · All-time peaks</div>
-                {NORMS.map((n, i) => {
+                {gymNorms.map((n, i) => {
                   const lv = getLevel(n.best, n.thresholds);
                   return (
                     <div key={i} style={{ padding: "10px 0", borderBottom: `1px solid rgba(42,47,66,.4)` }}>
@@ -568,7 +585,7 @@ export default function Dashboard() {
                           <div style={{ fontSize: 10, color: MU, fontStyle: "italic" }}>{n.note}</div>
                         </div>
                         <div style={{ textAlign: "right" }}>
-                          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: n.color, lineHeight: 1 }}>{n.best}kg</div>
+                          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: rc(n.color), lineHeight: 1 }}>{n.best}kg</div>
                           <span style={s.badge(lv.color, `${lv.color}22`)}>{lv.label}</span>
                         </div>
                       </div>
@@ -587,7 +604,7 @@ export default function Dashboard() {
                 <div style={s.cardTitle}>Strength Radar</div>
                 <div style={s.cardSub}>% of intermediate standard</div>
                 <ResponsiveContainer width="100%" height={280}>
-                  <RadarChart data={radarData}>
+                  <RadarChart data={gymRadar}>
                     <PolarGrid stroke={BR} />
                     <PolarAngleAxis dataKey="subject" tick={{fontSize:9,fill:MU}} />
                     <Radar name="Andre" dataKey="score" stroke={Y} fill={Y} fillOpacity={0.15} />
